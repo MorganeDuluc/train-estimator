@@ -1,8 +1,26 @@
+import {TrainTicketEstimator} from "./train-estimator";
+import {Passenger, TripDetails, TripRequest} from "./model/trip.request";
 
 describe("train estimator", function () {
-    it("should work", () => {
-        expect(1 + 2).toBe(3);
+    // beforeEach(() => {
+    //
+    // })
+
+    it("should check if there are no passengers", () => {
+        const trainTicketEstimator = new TrainTicketEstimator();
+        const departDate = new Date("5/5/2022, 4:11:58 PM");
+        const details = new TripDetails("Bordeaux", "Biarritz", departDate);
+        const passengers: Passenger[] = [];
+        const trainDetails = new TripRequest(details, passengers);
+
+        const result = trainTicketEstimator.estimate(trainDetails);
+
+        result.then(res => {
+            expect(res).toBe(0);
+        });
     });
+
+    it()
 });
 
 // *** INFORMATIONS CHECK ***

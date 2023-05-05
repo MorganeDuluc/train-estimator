@@ -2,7 +2,7 @@ import {ApiException, DiscountCard, InvalidTripInputException, TripRequest} from
 
 export class TrainTicketEstimator {
 
-    async estimate(trainDetails: TripRequest): Promise<number> {
+    async estimate(trainDetails: TripRequest) {
         if (trainDetails.passengers.length === 0) {
             return 0;
         }
@@ -35,7 +35,7 @@ export class TrainTicketEstimator {
                 throw new InvalidTripInputException("Age is invalid");
             }
             if (pasngers[i].age < 1) {
-                tmp = 0;
+                continue;
             }
             // Seniors
             else if (pasngers[i].age <= 17) {
@@ -56,8 +56,8 @@ export class TrainTicketEstimator {
                 const date1 = trainDetails.details.when;
                 const date2 = new Date();
                 //https://stackoverflow.com/questions/43735678/typescript-get-difference-between-two-dates-in-days
-                var diff = Math.abs(date1.getTime() - date2.getTime());
-                var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+                const diff = Math.abs(date1.getTime() - date2.getTime());
+                const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
 
                 tmp += (20 - diffDays) * 0.02 * b; // I tried. it works. I don't know why.
             } else {
