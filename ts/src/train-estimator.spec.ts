@@ -1,33 +1,90 @@
 import {TrainTicketEstimator} from "./train-estimator";
-import {Passenger, TripDetails, TripRequest} from "./model/trip.request";
+import {DiscountCard, InvalidTripInputException, Passenger, TripDetails, TripRequest} from "./model/trip.request";
 
 describe("train estimator", function () {
-    // beforeEach(() => {
-    //
-    // })
+    describe("Information check", function () {
+        let trainTicketEstimator: TrainTicketEstimator;
+        let departDate: Date;
+        beforeEach(() => {
+            trainTicketEstimator = new TrainTicketEstimator();
+            departDate = new Date(new Date().getFullYear(), new Date().getMonth()+1, new Date().getDay(), 0, 0, 0);
+        })
 
-    it("should check if there are no passengers", () => {
-        const trainTicketEstimator = new TrainTicketEstimator();
-        const departDate = new Date("5/5/2022, 4:11:58 PM");
-        const details = new TripDetails("Bordeaux", "Biarritz", departDate);
-        const passengers: Passenger[] = [];
-        const trainDetails = new TripRequest(details, passengers);
+        it("should check if there are no passengers", async () => {
+            const details = new TripDetails("Bordeaux", "Biarritz", departDate);
+            const passengers: Passenger[] = [];
+            const trainDetails = new TripRequest(details, passengers);
+            const result = await trainTicketEstimator.estimate(trainDetails);
 
-        const result = trainTicketEstimator.estimate(trainDetails);
+            expect(result).toBe(0);
 
-        result.then(res => {
-            expect(res).toBe(0);
+        });
+
+        it("should check if there are a city start", async () => {
+            const details = new TripDetails("", "Biarritz", departDate);
+            const discountCard: DiscountCard[] = [];
+            const passenger: Passenger = new Passenger(16, discountCard);
+            const passengers: Passenger[] = [];
+            passengers.push(passenger);
+            const trainDetails = new TripRequest(details, passengers);
+
+            try {
+                await trainTicketEstimator.estimate(trainDetails);
+            } catch (e) {
+                expect(e).toStrictEqual(new InvalidTripInputException("Start city is invalid"));
+            }
+        });
+
+        it("should check if there are a city end", async () => {
+            const details = new TripDetails("Bordeaux", "", departDate);
+            const discountCard: DiscountCard[] = [];
+            const passenger: Passenger = new Passenger(16, discountCard);
+            const passengers: Passenger[] = [];
+            passengers.push(passenger);
+            const trainDetails = new TripRequest(details, passengers);
+
+            try {
+                await trainTicketEstimator.estimate(trainDetails);
+            } catch (e) {
+                expect(e).toStrictEqual(new InvalidTripInputException("Destination city is invalid"));
+            }
+        });
+
+        it("should check if te depart date > today", async () => {
+            departDate = new Date(new Date().getFullYear(), new Date().getMonth()-1, new Date().getDay(), 0, 0, 0);
+            const details = new TripDetails("Bordeaux", "Biarritz", departDate);
+            const discountCard: DiscountCard[] = [];
+            const passenger: Passenger = new Passenger(16, discountCard);
+            const passengers: Passenger[] = [];
+            passengers.push(passenger);
+            const trainDetails = new TripRequest(details, passengers);
+
+            try {
+                await trainTicketEstimator.estimate(trainDetails);
+            } catch (e) {
+                expect(e).toStrictEqual(new InvalidTripInputException("Date is invalid"));
+            }
+        });
+
+        describe("Age check", function () {
+            it("should check if age < 0", async () => {
+                const details = new TripDetails("Bordeaux", "biarritz", departDate);
+                const discountCard: DiscountCard[] = [];
+                const passenger: Passenger = new Passenger(-1, discountCard);
+                const passengers: Passenger[] = [];
+                passengers.push(passenger);
+                const trainDetails = new TripRequest(details, passengers);
+
+                try {
+                    await trainTicketEstimator.estimate(trainDetails);
+                } catch (e) {
+                    expect(e).toStrictEqual(new InvalidTripInputException("Age is invalid"));
+                }
+
+            });
         });
     });
-
-    it()
 });
-
-// *** INFORMATIONS CHECK ***
-// should check if there is no passenger
-// should check if there are a city start and a city end
-// should check if there is the date of the departure
-// should check if there is no age
 
 
 // mock call SNCF to get the prices
