@@ -30,10 +30,10 @@ export class TrainTicketEstimator {
         }
 
         const passengers = trainDetails.passengers;
-        let tot = 0;
+        let total = 0;
         let trainEstimatorPriceByPassenger = sncfPrice;
-        for (let i=0; i < passengers.length; i++) {
 
+        for (let i=0; i < passengers.length; i++) {
             if (passengers[i].age < 0) {
                 throw new InvalidTripInputException("Age is invalid");
             }
@@ -42,22 +42,23 @@ export class TrainTicketEstimator {
                 trainEstimatorPriceByPassenger = 0;
             }
 
-            // Seniors
             else if (passengers[i].age <= 17) {
-            trainEstimatorPriceByPassenger = sncfPrice* 0.6;
-            } else if(passengers[i].age >= 70) {
+                trainEstimatorPriceByPassenger = sncfPrice * 0.6;
+            } 
+            
+            else if(passengers[i].age >= 70) {
                 trainEstimatorPriceByPassenger = sncfPrice * 0.8;
-                if (passengers[i].discounts.includes(DiscountCard.Senior)) {
-                    trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
-                }
+                    if (passengers[i].discounts.includes(DiscountCard.Senior)) {
+                        trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
+                    }
             } else {
-                trainEstimatorPriceByPassenger = sncfPrice*1.2;
+                trainEstimatorPriceByPassenger = sncfPrice * 1.2;
             }
 
-            const d = new Date();
-            if (trainDetails.details.when.getTime() >= d.setDate(d.getDate() +30)) {
+            const date = new Date();
+            if (trainDetails.details.when.getTime() >= date.setDate(date.getDate() +30)) {
                 trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
-            } else if (trainDetails.details.when.getTime() > d.setDate(d.getDate() -30 + 5)) {
+            } else if (trainDetails.details.when.getTime() > date.setDate(date.getDate() -30 + 5)) {
                 const date1 = trainDetails.details.when;
                 const date2 = new Date();
                 var diff = Math.abs(date1.getTime() - date2.getTime());
@@ -76,7 +77,7 @@ export class TrainTicketEstimator {
                 trainEstimatorPriceByPassenger = 1;
             }
 
-            tot += trainEstimatorPriceByPassenger;
+            total += trainEstimatorPriceByPassenger;
             trainEstimatorPriceByPassenger = sncfPrice;
         }
 
@@ -92,14 +93,14 @@ export class TrainTicketEstimator {
                 }
             }
             if (cp && !mn) {
-                tot -= sncfPrice * 0.2 * 2;
+                total -= sncfPrice * 0.2 * 2;
             }
         }
 
         if (passengers.length == 1) {
             let cp = false;
             let mn = false;
-            for (let i=0;i<passengers.length;i++) {
+            for (let i=0; i < passengers.length;i++) {
                 if (passengers[i].discounts.includes(DiscountCard.HalfCouple)) {
                     cp = true;
                 }
@@ -108,10 +109,10 @@ export class TrainTicketEstimator {
                 }
             }
             if (cp && !mn) {
-                tot -= sncfPrice * 0.1;
+                total -= sncfPrice * 0.1;
             }
         }
 
-        return tot;
+        return total;
     }
 }

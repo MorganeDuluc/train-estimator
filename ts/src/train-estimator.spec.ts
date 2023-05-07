@@ -3,67 +3,102 @@ import { TrainTicketEstimator } from "./train-estimator";
 
 describe("estimation train ticket according to the age", function () {
     // mock call SNCF to get the prices
-        let trainTicketEstimator: TrainTicketEstimator;
+    let trainTicketEstimator: TrainTicketEstimator;
 
-        beforeEach(() => {
-            trainTicketEstimator = new TrainTicketEstimator();
-          });
+    beforeEach(() => {
+        trainTicketEstimator = new TrainTicketEstimator();
+        });
+    
+    class TrainTicketEstimatorOverload extends TrainTicketEstimator {           
+        protected async getSncfPrice(trainDetails: TripRequest): Promise<number>{
+            return Promise.resolve(10);
+        }
+    }
+
+    it("should check if the age is less than 4, if that the case the price's travel is 9€ (with overload)", async function() { 
+            
+        const overload = new TrainTicketEstimatorOverload();
         
-        class TrainTicketEstimatorOverload extends TrainTicketEstimator {           
-            protected async getSncfPrice(trainDetails: TripRequest): Promise<number>{
-                return Promise.resolve(10);
-            }
-          }
+        const tripDetails = {
+            from: 'Bordeaux',
+            to: 'Biarritz',
+            when: new Date()
+        };
 
-          it("should check if the age is less than 4, if that the case the price's travel is 9€ (with overload)", async function() { 
-              
-            const overload = new TrainTicketEstimatorOverload();
-           
-            const tripDetails = {
-                from: 'Bordeaux',
-                to: 'Biarritz',
-                when: new Date()
-            };
+        const passengerDetails = [{
+            age: 3,
+            discounts: []
+        }];
+        
+        let trainDetails = new TripRequest(tripDetails, passengerDetails);
 
-            const passengerDetails = [{
-                age: 3,
-                discounts: []
-            }];
-            
-            let trainDetails = new TripRequest(tripDetails, passengerDetails);
-
-            const trainEstimatorPrice = await overload.estimate(trainDetails)
-            expect(trainEstimatorPrice).toEqual(9)
-        })
-
-        it("should check if the age is less than 19, if that the case there is 40% of reduction on the basic price (with overload)", async function() { 
-              
-            const overload = new TrainTicketEstimatorOverload();
-           
-            const tripDetails = {
-                from: 'Bordeaux',
-                to: 'Biarritz',
-                when: new Date()
-            };
-
-            const passengerDetails = [{
-                age: 18,
-                discounts: []
-            }];
-            
-            let trainDetails = new TripRequest(tripDetails, passengerDetails);
-
-            const trainEstimatorPrice = await overload.estimate(trainDetails)
-            expect(trainEstimatorPrice).toEqual(9)
-        })
-
-        // should check if the age is egal or under 18
-    // --> if that the case there is 40% of reduction on the basic price
-// should check if the age is egal or under 70
-    // --> if that the case there is 20% of reduction on the basic price
-    // --> in other case +20% on the basic price
-
+        const trainEstimatorPrice = await overload.estimate(trainDetails)
+        expect(trainEstimatorPrice).toEqual(9)
     })
+
+    it("should check if the age is less or egal to 17, if that the case there is 40% of reduction on the basic price (sncf price + scnf price * 0.6) - (with overload)", async function() { 
+            
+        const overload = new TrainTicketEstimatorOverload();
+        
+        const tripDetails = {
+            from: 'Bordeaux',
+            to: 'Biarritz',
+            when: new Date()
+        };
+
+        const passengerDetails = [{
+            age: 17,
+            discounts: []
+        }];
+        
+        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+
+        const trainEstimatorPrice = await overload.estimate(trainDetails)
+        expect(trainEstimatorPrice).toEqual(16)
+    })
+
+    it("should check if the age is more or egal to 70, if that the case there is 20% of reduction on the basic price (sncf price + scnf price * 0.8) - (with overload)", async function() { 
+            
+        const overload = new TrainTicketEstimatorOverload();
+        
+        const tripDetails = {
+            from: 'Bordeaux',
+            to: 'Biarritz',
+            when: new Date()
+        };
+
+        const passengerDetails = [{
+            age: 70,
+            discounts: []
+        }];
+        
+        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+
+        const trainEstimatorPrice = await overload.estimate(trainDetails)
+        expect(trainEstimatorPrice).toEqual(18)
+    })
+
+    it("should check if the age doesn't enter in the other tests (sncf price + scnf price * 1.2) - (with overload)", async function() { 
+            
+        const overload = new TrainTicketEstimatorOverload();
+        
+        const tripDetails = {
+            from: 'Bordeaux',
+            to: 'Biarritz',
+            when: new Date()
+        };
+
+        const passengerDetails = [{
+            age: 25,
+            discounts: []
+        }];
+        
+        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+
+        const trainEstimatorPrice = await overload.estimate(trainDetails)
+        expect(trainEstimatorPrice).toEqual(22)
+    })
+})
 
 // *** PRICES ACCORDING TO THE BOOKING DATE CHECK ***
 // should check if the booking date (current date)is 30 days before the starting date
