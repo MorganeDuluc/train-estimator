@@ -1,7 +1,7 @@
 import {TrainTicketEstimator} from "./train-estimator";
 import {DiscountCard, InvalidTripInputException, Passenger, TripDetails, TripRequest} from "./model/trip.request";
 
-describe("train estimator", function () {
+describe("Train estimator", function () {
     describe("Information check", function () {
         let trainTicketEstimator: TrainTicketEstimator;
         let departDate: Date;
@@ -17,7 +17,6 @@ describe("train estimator", function () {
             const result = await trainTicketEstimator.estimate(trainDetails);
 
             expect(result).toBe(0);
-
         });
 
         it("should check if there are a city start", async () => {
@@ -67,7 +66,7 @@ describe("train estimator", function () {
         });
     });
 
-    describe("estimation train ticket  price's according to the age", function () {
+    describe("Estimation train ticket  price's according to the age", function () {
         let trainTicketEstimator: TrainTicketEstimator;
 
         beforeEach(() => {
@@ -161,7 +160,7 @@ describe("train estimator", function () {
         });
     });
 
-    describe("estimation train ticket price's according to the discount card", function () {
+    describe("Estimation train ticket price's according to the discount card", function () {
         let trainTicketEstimator: TrainTicketEstimator;
     
         beforeEach(() => {
@@ -243,17 +242,119 @@ describe("train estimator", function () {
 
         // All the discound are cumulative except if the TrainStroke discound card is use !
     });
-})
 
-// *** PRICES ACCORDING TO THE BOOKING DATE CHECK ***
-// should check if the booking date (current date)is 30 days before the starting date
-    // --> if that the case 20% of reduction on the price
-// Idk how to formulate this = Puis on applique 2% d'augmentation par jour pendant 25 jours (donc de -18% à 29 jours jusqu'à +30% à 5 jours de la date de départ)
+    describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
+        class TrainTicketEstimatorOverload extends TrainTicketEstimator {
+            public getSncfPrice(trainDetails: TripRequest): Promise<number> {
+            return Promise.resolve(6);
+            }
+        }
 
-    // --> if that the case soustract 2% to the 20% each day till 5 days before the starting date
+        let trainTicketEstimator: TrainTicketEstimatorOverload;
 
-// should check if the the booking date (current date) is 5 days before the starting date
-    // --> if that the case multiple by two the ticket price
-    // --> this rules don't apply to the fix price's ticket (kids egal or under to three (9€) and possesors of the TrainStroke discound card (1€))
+        beforeEach(() => {
+            trainTicketEstimator = new TrainTicketEstimatorOverload();
+        });
 
-// Attention partir de la date de commande et pas de la date de départ
+        it("should apply a 20% discount if booking is made 30 days or more in advance", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() + 31
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(30, [])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const expectedPrice = Math.round(currentPrice * 0.8);
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).toEqual(actualPrice);
+        });
+
+        it("should not apply a discount if booking is made less than 30 days in advance", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate()
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(30, [])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const expectedPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).not.toEqual(actualPrice);
+        });
+
+        it("should increase price by 2% per day for 25 days", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() + 29
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(30, [])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const expectedPrice = currentPrice * 1.02;
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).toBeCloseTo(actualPrice);
+        });
+
+        it("should check if the the booking date (current date) is 5 days before the starting date", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() + 3
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(25, [])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const expectedPrice = currentPrice * 2 + 1.2;
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).toEqual(actualPrice);
+        });
+
+        it("should don't apply to the fix price's ticket for kids", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() + 3
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(2, [])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const expectedPrice = currentPrice * 2 + 1.2;
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).not.toEqual(actualPrice);
+        });
+
+        it("should don't apply to the fix price's ticket for TrainStroke", async () => {
+            const date = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() + 3
+            );
+
+            const tripDetails = new TripDetails("Paris", "Marseille", date);
+            const passengers = [new Passenger(30, [DiscountCard.TrainStroke])];
+            const tripRequest = new TripRequest(tripDetails, passengers);
+
+            const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+            const expectedPrice = currentPrice * 2 + 1.2;
+            const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+            expect(expectedPrice).not.toEqual(actualPrice);
+        });
+    });
+});

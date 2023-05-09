@@ -57,7 +57,7 @@ export class TrainTicketEstimator {
 
             const date = new Date();
             if (trainDetails.details.when.getTime() >= date.setDate(date.getDate() +30)) {
-                trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
+              trainEstimatorPriceByPassenger = Math.round(sncfPrice * 0.8);
             } else if (trainDetails.details.when.getTime() > date.setDate(date.getDate() -30 + 5)) {
                 const date1 = trainDetails.details.when;
                 const date2 = new Date();
