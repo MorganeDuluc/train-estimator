@@ -2,131 +2,133 @@ import { TripRequest } from "./model/trip.request";
 import { TrainTicketEstimator } from "./train-estimator";
 
 describe("estimation train ticket according to the age", function () {
-    // mock call SNCF to get the prices
-    let trainTicketEstimator: TrainTicketEstimator;
+  // mock call SNCF to get the prices
+  let trainTicketEstimator: TrainTicketEstimator;
 
-    beforeEach(() => {
-        trainTicketEstimator = new TrainTicketEstimator();
-        });
-    
-    class TrainTicketEstimatorOverload extends TrainTicketEstimator {           
-        protected async getSncfPrice(trainDetails: TripRequest): Promise<number>{
-            return Promise.resolve(10);
-        }
+  beforeEach(() => {
+    trainTicketEstimator = new TrainTicketEstimator();
+  });
+
+  class TrainTicketEstimatorOverload extends TrainTicketEstimator {
+    protected async getSncfPrice(trainDetails: TripRequest): Promise<number> {
+      return Promise.resolve(10);
     }
+  }
 
-    it("should check if the age is less than 4, if that the case the price's travel is 9€ (with overload)", async function() { 
-            
-        const overload = new TrainTicketEstimatorOverload();
-        
-        const tripDetails = {
-            from: 'Bordeaux',
-            to: 'Biarritz',
-            when: new Date()
-        };
+  it("should check if the age is less than 4, if that the case the price's travel is 9€ (with overload)", async function () {
+    const overload = new TrainTicketEstimatorOverload();
 
-        const passengerDetails = [{
-            age: 3,
-            discounts: []
-        }];
-        
-        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+    const tripDetails = {
+      from: "Bordeaux",
+      to: "Biarritz",
+      when: new Date(),
+    };
 
-        const trainEstimatorPrice = await overload.estimate(trainDetails)
-        expect(trainEstimatorPrice).toEqual(9)
-    })
+    const passengerDetails = [
+      {
+        age: 3,
+        discounts: [],
+      },
+    ];
 
-    it("should check if the age is less or egal to 17, if that the case there is 40% of reduction on the basic price (sncf price + scnf price * 0.6) - (with overload)", async function() { 
-            
-        const overload = new TrainTicketEstimatorOverload();
-        
-        const tripDetails = {
-            from: 'Bordeaux',
-            to: 'Biarritz',
-            when: new Date()
-        };
+    let trainDetails = new TripRequest(tripDetails, passengerDetails);
 
-        const passengerDetails = [{
-            age: 17,
-            discounts: []
-        }];
-        
-        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+    const trainEstimatorPrice = await overload.estimate(trainDetails);
+    expect(trainEstimatorPrice).toEqual(9);
+  });
 
-        const trainEstimatorPrice = await overload.estimate(trainDetails)
-        expect(trainEstimatorPrice).toEqual(16)
-    })
+  it("should check if the age is less or egal to 17, if that the case there is 40% of reduction on the basic price (sncf price + scnf price * 0.6) - (with overload)", async function () {
+    const overload = new TrainTicketEstimatorOverload();
 
-    it("should check if the age is more or egal to 70, if that the case there is 20% of reduction on the basic price (sncf price + scnf price * 0.8) - (with overload)", async function() { 
-            
-        const overload = new TrainTicketEstimatorOverload();
-        
-        const tripDetails = {
-            from: 'Bordeaux',
-            to: 'Biarritz',
-            when: new Date()
-        };
+    const tripDetails = {
+      from: "Bordeaux",
+      to: "Biarritz",
+      when: new Date(),
+    };
 
-        const passengerDetails = [{
-            age: 70,
-            discounts: []
-        }];
-        
-        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+    const passengerDetails = [
+      {
+        age: 17,
+        discounts: [],
+      },
+    ];
 
-        const trainEstimatorPrice = await overload.estimate(trainDetails)
-        expect(trainEstimatorPrice).toEqual(18)
-    })
+    let trainDetails = new TripRequest(tripDetails, passengerDetails);
 
-    it("should check if the age doesn't enter in the other tests (sncf price + scnf price * 1.2) - (with overload)", async function() { 
-            
-        const overload = new TrainTicketEstimatorOverload();
-        
-        const tripDetails = {
-            from: 'Bordeaux',
-            to: 'Biarritz',
-            when: new Date()
-        };
+    const trainEstimatorPrice = await overload.estimate(trainDetails);
+    expect(trainEstimatorPrice).toEqual(16);
+  });
 
-        const passengerDetails = [{
-            age: 25,
-            discounts: []
-        }];
-        
-        let trainDetails = new TripRequest(tripDetails, passengerDetails);
+  it("should check if the age is more or egal to 70, if that the case there is 20% of reduction on the basic price (sncf price + scnf price * 0.8) - (with overload)", async function () {
+    const overload = new TrainTicketEstimatorOverload();
 
-        const trainEstimatorPrice = await overload.estimate(trainDetails)
-        expect(trainEstimatorPrice).toEqual(22)
-    })
-})
+    const tripDetails = {
+      from: "Bordeaux",
+      to: "Biarritz",
+      when: new Date(),
+    };
 
-// *** PRICES ACCORDING TO THE BOOKING DATE CHECK ***
-// should check if the booking date (current date)is 30 days before the starting date
-    // --> if that the case 20% of reduction on the price
-// Idk how to formulate this = Puis on applique 2% d'augmentation par jour pendant 25 jours (donc de -18% à 29 jours jusqu'à +30% à 5 jours de la date de départ)
+    const passengerDetails = [
+      {
+        age: 70,
+        discounts: [],
+      },
+    ];
 
-    // --> if that the case soustract 2% to the 20% each day till 5 days before the starting date
+    let trainDetails = new TripRequest(tripDetails, passengerDetails);
 
-// should check if the the booking date (current date) is 5 days before the starting date
-    // --> if that the case multiple by two the ticket price
-    // --> this rules don't apply to the fix price's ticket (kids egal or under to three (9€) and possesors of the TrainStroke discound card (1€))
+    const trainEstimatorPrice = await overload.estimate(trainDetails);
+    expect(trainEstimatorPrice).toEqual(18);
+  });
 
+  it("should check if the age doesn't enter in the other tests (sncf price + scnf price * 1.2) - (with overload)", async function () {
+    const overload = new TrainTicketEstimatorOverload();
+
+    const tripDetails = {
+      from: "Bordeaux",
+      to: "Biarritz",
+      when: new Date(),
+    };
+
+    const passengerDetails = [
+      {
+        age: 25,
+        discounts: [],
+      },
+    ];
+
+    let trainDetails = new TripRequest(tripDetails, passengerDetails);
+
+    const trainEstimatorPrice = await overload.estimate(trainDetails);
+    expect(trainEstimatorPrice).toEqual(22);
+  });
+});
+
+describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", function () {
+  // should check if the booking date (current date)is 30 days before the starting date
+  // --> if that the case 20% of reduction on the price
+  // Idk how to formulate this = Puis on applique 2% d'augmentation par jour pendant 25 jours (donc de -18% à 29 jours jusqu'à +30% à 5 jours de la date de départ)
+  // --> if that the case soustract 2% to the 20% each day till 5 days before the starting date
+  // should check if the the booking date (current date) is 5 days before the starting date
+  // --> if that the case multiple by two the ticket price
+  // --> this rules don't apply to the fix price's ticket (kids egal or under to three (9€) and possesors of the TrainStroke discound card (1€))
+});
 
 // *** PRICES ACCORDING TO DISCOUNT CARD ***
 // should check if the passenger have no discound card
 // should check if he has the TrainStroke staff
-    // --> if that the case all the ticket are 1€
+// --> if that the case all the ticket are 1€
 // should check if he has the Senior card
-    // --> if that the case check if the age is more than 70
-    // --> if that the case 20% of reduction again
+// --> if that the case check if the age is more than 70
+// --> if that the case 20% of reduction again
 // should check if the passengers have couple card
-    // --> check if the age of the two passengers is more than 18 (adult people)
-    // --> if that the case 20% of reduction for each ticket's passenger
-    // --> if that the case check if each passenger have a couple card
-        // ----> if that the case only one couple card can work
+// --> check if the age of the two passengers is more than 18 (adult people)
+// --> if that the case 20% of reduction for each ticket's passenger
+// --> if that the case check if each passenger have a couple card
+// ----> if that the case only one couple card can work
 // should check if the passenger has a mi-couple card
-    // --> if that the case check if at least the age of one of the two travellers is more or egal to 18
-        // ----> if that the case 10% of the reduction for each passenger
+// --> if that the case check if at least the age of one of the two travellers is more or egal to 18
+// ----> if that the case 10% of the reduction for each passenger
 
 // All the discound are cumulative except if the TrainStroke discound card is use !
 
