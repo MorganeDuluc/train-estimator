@@ -1,5 +1,5 @@
 import { TrainTicketEstimator } from "../train-estimator";
-import { Passenger, TripDetails, TripRequest } from "../model";
+import { DiscountCard, Passenger, TripDetails, TripRequest } from "../model";
 
 describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
   class TrainTicketEstimatorOverload extends TrainTicketEstimator {
@@ -90,6 +90,23 @@ describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
 
     const tripDetails = new TripDetails("Paris", "Marseille", date);
     const passengers = [new Passenger(2, [])];
+    const tripRequest = new TripRequest(tripDetails, passengers);
+
+    const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+    const expectedPrice = currentPrice * 2 + 1.2;
+    const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+    expect(expectedPrice).not.toEqual(actualPrice);
+  });
+
+  it("should don't apply to the fix price's ticket for TrainStroke", async () => {
+    const date = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate() + 3
+    );
+
+    const tripDetails = new TripDetails("Paris", "Marseille", date);
+    const passengers = [new Passenger(30, [DiscountCard.TrainStroke])];
     const tripRequest = new TripRequest(tripDetails, passengers);
 
     const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
