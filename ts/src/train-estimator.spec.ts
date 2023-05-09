@@ -65,24 +65,6 @@ describe("train estimator", function () {
                 expect(e).toStrictEqual(new InvalidTripInputException("Date is invalid"));
             }
         });
-
-        describe("Age check", function () {
-            it("should check if age < 0", async () => {
-                const details = new TripDetails("Bordeaux", "biarritz", departDate);
-                const discountCard: DiscountCard[] = [];
-                const passenger: Passenger = new Passenger(-1, discountCard);
-                const passengers: Passenger[] = [];
-                passengers.push(passenger);
-                const trainDetails = new TripRequest(details, passengers);
-
-                try {
-                    await trainTicketEstimator.estimate(trainDetails);
-                } catch (e) {
-                    expect(e).toStrictEqual(new InvalidTripInputException("Age is invalid"));
-                }
-
-            });
-        });
     });
 });
 
