@@ -105,8 +105,6 @@ describe("estimation train ticket according to the age", function () {
 });
 
 describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", function () {
-  // Idk how to formulate this = Puis on applique 2% d'augmentation par jour pendant 25 jours (donc de -18% à 29 jours jusqu'à +30% à 5 jours de la date de départ)
-  // --> if that the case soustract 2% to the 20% each day till 5 days before the starting date
   // should check if the the booking date (current date) is 5 days before the starting date
   // --> if that the case multiple by two the ticket price
   // --> this rules don't apply to the fix price's ticket (kids egal or under to three (9€) and possesors of the TrainStroke discound card (1€))
