@@ -3,7 +3,7 @@ import {ApiException, DiscountCard, InvalidTripInputException, TripRequest} from
 export class TrainTicketEstimator {
     protected async getSncfPrice(trainDetails: TripRequest): Promise<number> {
         return (await(await fetch(`https://sncf.com/api/train/estimate/price?from=${trainDetails.details.from}&to=${trainDetails.details.to}&date=${trainDetails.details.when}`)).json())?.price || -1;
-        
+
     }
 
     async estimate(trainDetails: TripRequest): Promise<number> {
@@ -44,13 +44,13 @@ export class TrainTicketEstimator {
 
             else if (passengers[i].age <= 17) {
                 trainEstimatorPriceByPassenger = sncfPrice * 0.6;
-            } 
-            
+            }
+
             else if(passengers[i].age >= 70) {
                 trainEstimatorPriceByPassenger = sncfPrice * 0.8;
-                    if (passengers[i].discounts.includes(DiscountCard.Senior)) {
-                        trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
-                    }
+                if (passengers[i].discounts.includes(DiscountCard.Senior)) {
+                    trainEstimatorPriceByPassenger -= sncfPrice * 0.2;
+                }
             } else {
                 trainEstimatorPriceByPassenger = sncfPrice * 1.2;
             }
@@ -61,8 +61,8 @@ export class TrainTicketEstimator {
             } else if (trainDetails.details.when.getTime() > date.setDate(date.getDate() -30 + 5)) {
                 const date1 = trainDetails.details.when;
                 const date2 = new Date();
-                var diff = Math.abs(date1.getTime() - date2.getTime());
-                var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+                const diff = Math.abs(date1.getTime() - date2.getTime());
+                const diffDays = Math.ceil(diff / (1000 * 3600 * 24));
 
                 trainEstimatorPriceByPassenger += (20 - diffDays) * 0.02 * sncfPrice;
             } else {
