@@ -34,4 +34,24 @@ describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
     const actualPrice = await trainTicketEstimator.estimate(tripRequest);
     expect(expectedPrice).toEqual(actualPrice);
   });
+
+  it("should not apply a discount if booking is made less than 30 days in advance", async () => {
+    const thirtyDaysAdvance = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate()
+    );
+
+    const tripDetails = new TripDetails(
+      "Paris",
+      "Marseille",
+      thirtyDaysAdvance
+    );
+    const passengers = [new Passenger(30, [])];
+    const tripRequest = new TripRequest(tripDetails, passengers);
+
+    const expectedPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+    const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+    expect(expectedPrice).not.toEqual(actualPrice);
+  });
 });
