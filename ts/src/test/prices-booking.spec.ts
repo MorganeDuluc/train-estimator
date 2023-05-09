@@ -71,8 +71,6 @@ describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
       new Date().getDate() + 3
     );
 
-    console.log({ date });
-
     const tripDetails = new TripDetails("Paris", "Marseille", date);
     const passengers = [new Passenger(25, [])];
     const tripRequest = new TripRequest(tripDetails, passengers);
@@ -81,5 +79,22 @@ describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
     const expectedPrice = currentPrice * 2 + 1.2;
     const actualPrice = await trainTicketEstimator.estimate(tripRequest);
     expect(expectedPrice).toEqual(actualPrice);
+  });
+
+  it("should don't apply to the fix price's ticket for kids", async () => {
+    const date = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate() + 3
+    );
+
+    const tripDetails = new TripDetails("Paris", "Marseille", date);
+    const passengers = [new Passenger(2, [])];
+    const tripRequest = new TripRequest(tripDetails, passengers);
+
+    const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+    const expectedPrice = currentPrice * 2 + 1.2;
+    const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+    expect(expectedPrice).not.toEqual(actualPrice);
   });
 });
