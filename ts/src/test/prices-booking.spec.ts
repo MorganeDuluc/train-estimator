@@ -54,4 +54,25 @@ describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
     const actualPrice = await trainTicketEstimator.estimate(tripRequest);
     expect(expectedPrice).not.toEqual(actualPrice);
   });
+
+  it("should increase price by 2% per day for 25 days", async () => {
+    const thirtyDaysAdvance = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate() + 29
+    );
+
+    const tripDetails = new TripDetails(
+      "Paris",
+      "Marseille",
+      thirtyDaysAdvance
+    );
+    const passengers = [new Passenger(30, [])];
+    const tripRequest = new TripRequest(tripDetails, passengers);
+
+    const currentPrice = await trainTicketEstimator.getSncfPrice(tripRequest);
+    const expectedPrice = currentPrice * 1.02;
+    const actualPrice = await trainTicketEstimator.estimate(tripRequest);
+    expect(expectedPrice).toBeCloseTo(actualPrice);
+  });
 });
