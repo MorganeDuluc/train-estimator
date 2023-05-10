@@ -56,7 +56,11 @@ export class TrainTicketEstimator {
             }
 
             const date = new Date();
-            if (trainDetails.details.when.getTime() >= date.setDate(date.getDate() +30)) {
+            // const timeDiff = trainDetails.details.when.getTime() - date.getTime();
+            // const hoursDiff = timeDiff / (1000 * 3600);
+            // if (hoursDiff < 6) {
+            //     trainEstimatorPriceByPassenger *= 0.8;
+            /*else */if (trainDetails.details.when.getTime() >= date.setDate(date.getDate() +30)) {
               trainEstimatorPriceByPassenger = Math.round(sncfPrice * 0.8);
             } else if (trainDetails.details.when.getTime() > date.setDate(date.getDate() -30 + 5)) {
                 const date1 = trainDetails.details.when;
