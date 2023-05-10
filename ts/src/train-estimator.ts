@@ -100,7 +100,7 @@ export class TrainTicketEstimator {
         if (passengers.length == 1) {
             let cp = false;
             let mn = false;
-            for (let i=0; i < passengers.length;i++) {
+            for (let i=0; i < passengers.length; i++) {
                 if (passengers[i].discounts.includes(DiscountCard.HalfCouple)) {
                     cp = true;
                 }

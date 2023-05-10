@@ -240,7 +240,58 @@ describe("Train estimator", function () {
             expect(trainEstimatorPrice).toEqual(expectedPrice);
         });
 
-        // All the discound are cumulative except if the TrainStroke discound card is use !
+        it("should check if the passenger has a mi-couple card (age of one of the two passengers have to be more than 17) if that the case 10% of the reduction for each passenger - (with overload)", async function() { 
+            const overload = new TrainTicketEstimatorOverload();
+            
+            const tripDetails = {
+                from: 'Bordeaux',
+                to: 'Biarritz',
+                when: new Date()
+            };
+    
+            const passengerDetails = [
+                {
+                    age: 16,
+                    discounts: [DiscountCard.HalfCouple]
+                },
+                {
+                    age: 20,
+                    discounts: [DiscountCard.HalfCouple]
+                }
+            ];
+            
+            const trainDetails = new TripRequest(tripDetails, passengerDetails);
+            const trainEstimatorPrice = await overload.estimate(trainDetails);
+            const expectedPrice = ((16 - 1) + (22 - 1)); // 36
+            // Monsieur, je ne comprends pas :
+            // un passager de 16 ans à 40% de réducion donc le billet revient à 16€ - 1€ des 10% de la carte mi-couple on est à 15€
+            // plus passager de 20 ans c'est plus 20% donc le billet revient à 22€ - 1€ des 10% de la carte mi-couple on est à 21€
+            // 15 + 21 = 36€ mais le code m'indique qu'il reçoit 38€ je ne suis pas !!
+
+            expect(trainEstimatorPrice).toEqual(expectedPrice);
+        });
+
+        it("should check if all the discound are cumulative except if the TrainStroke discound card is use ! - (with overload)", async function() { 
+            const overload = new TrainTicketEstimatorOverload();
+            
+            const tripDetails = {
+                from: 'Bordeaux',
+                to: 'Biarritz',
+                when: new Date()
+            };
+    
+            const passengerDetails = [
+                {
+                    age: 70,
+                    discounts: [DiscountCard.TrainStroke]
+                }
+            ];
+            
+            const trainDetails = new TripRequest(tripDetails, passengerDetails);
+            const trainEstimatorPrice = await overload.estimate(trainDetails);
+
+            expect(trainEstimatorPrice).toEqual(1);
+        });
     });
 
     describe("PRICES ACCORDING TO THE BOOKING DATE CHECK", () => {
